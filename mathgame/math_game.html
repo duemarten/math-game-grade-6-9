@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Math Quest 🧮</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 2.5em;
+    text-shadow: 2px 2px 5px #000;
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  #gameContainer {
+    background: rgba(0,0,0,0.5);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  }
+  select, input, button {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+  }
+  button {
+    background-color: #00ffcc;
+    color: #000;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover { background-color: #00b386; }
+  .option {
+    display: block;
+    margin: 8px auto;
+    background: #fff;
+    color: #000;
+    width: 80%;
+    border-radius: 8px;
+    padding: 8px;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .option:hover {
+    transform: scale(1.05);
+    background: #00e6ac;
+  }
+  #progressBar {
+    background: #ddd;
+    height: 15px;
+    border-radius: 8px;
+    width: 100%;
+    margin: 10px 0;
+    overflow: hidden;
+  }
+  #progress {
+    background: #00ffcc;
+    height: 100%;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  #result {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  #leaderboard {
+    margin-top: 20px;
+    text-align: left;
+  }
+  #leaderboard h2 {
+    text-align: center;
+    text-shadow: 1px 1px 3px #000;
+  }
+  #leaderboard ol {
+    padding-left: 20px;
+  }
+  #nameInputArea {
+    display: none;
+  }
+</style>
+</head>
+<body>
+<h1>🧮 Ultimate Math Quest</h1>
+<div id="gameContainer">
+  <p>Select your grade level:</p>
+  <select id="gradeLevel">
+    <option value="6">Grade 6</option>
+    <option value="7">Grade 7</option>
+    <option value="8">Grade 8</option>
+    <option value="9">Grade 9</option>
+  </select><br>
+  <button onclick="startGame()">Start Game</button>
+
+  <div id="gameArea" style="display:none;">
+    <p id="question"></p>
+    <div id="options"></div>
+    <div id="progressBar"><div id="progress"></div></div>
+    <p id="scoreDisplay">Score: 0</p>
+    <p id="result"></p>
+  </div>
+
+  <div id="nameInputArea">
+    <p>Enter your name to save your score:</p>
+    <input id="playerName" placeholder="Your name">
+    <button onclick="saveScore()">Save Score</button>
+  </div>
+
+  <div id="leaderboard">
+    <h2>🏆 Leaderboard</h2>
+    <ol id="leaderboardList"></ol>
+  </div>
+</div>
+
+<!-- Sound effects -->
+<audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_68b6b8d4de.mp3"></audio>
+<audio id="wrongSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_b3d4ef6b07.mp3"></audio>
+<audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_3db0e8fae4.mp3"></audio>
+
+<script>
+let correctAnswer;
+let score = 0;
+let questionCount = 0;
+let grade = 6;
+
+function startGame() {
+  grade = parseInt(document.getElementById("gradeLevel").value);
+  score = 0;
+  questionCount = 0;
+  document.getElementById("gameArea").style.display = "block";
+  document.getElementById("nameInputArea").style.display = "none";
+  document.getElementById("result").textContent = "";
+  document.getElementById("scoreDisplay").textContent = "Score: 0";
+  document.getElementById("progress").style.width = "0%";
+  nextQuestion();
+}
+
+function playSound(id) {
+  const sound = document.getElementById(id);
+  sound.currentTime = 0;
+  sound.play();
+}
+
+function generateQuestion() {
+  let num1, num2, op, questionText;
+  switch (grade) {
+    case 6:
+      num1 = Math.floor(Math.random() * 20) + 1;
+      num2 = Math.floor(Math.random() * 20) + 1;
+      op = ["+", "-", "*"][Math.floor(Math.random() * 3)];
+      correctAnswer = eval(`${num1} ${op} ${num2}`);
+      questionText = `${num1} ${op} ${num2} = ?`;
+      break;
+    case 7:
+      num1 = Math.floor(Math.random() * 50) + 1;
+      num2 = Math.floor(Math.random() * 10) + 1;
+      op = ["/", "*", "+", "-"][Math.floor(Math.random() * 4)];
+      correctAnswer = eval(`${num1} ${op} ${num2}`);
+      correctAnswer = Math.round(correctAnswer * 100) / 100;
+      questionText = `${num1} ${op} ${num2} = ?`;
+      break;
+    case 8:
+      num1 = Math.floor(Math.random() * 15) + 1;
+      num2 = Math.floor(Math.random() * 5) + 1;
+      op = ["^", "√"][Math.floor(Math.random() * 2)];
+      if (op === "^") {
+        correctAnswer = Math.pow(num1, num2);
+        questionText = `${num1} ^ ${num2} = ?`;
+      } else {
+        correctAnswer = Math.sqrt(num1);
+        correctAnswer = Math.round(correctAnswer * 100) / 100;
+        questionText = `√${num1} = ?`;
+      }
+      break;
+    case 9:
+      const type = ["quad", "frac"][Math.floor(Math.random() * 2)];
+      if (type === "quad") {
+        let a = Math.floor(Math.random() * 3) + 1;
+        let b = Math.floor(Math.random() * 5) + 1;
+        let c = Math.floor(Math.random() * 4) + 1;
+        correctAnswer = b * b - 4 * a * c;
+        questionText = `Find the discriminant of ${a}x² + ${b}x + ${c}`;
+      } else {
+        num1 = Math.floor(Math.random() * 9) + 1;
+        num2 = Math.floor(Math.random() * 9) + 1;
+        let num3 = Math.floor(Math.random() * 9) + 1;
+        let num4 = Math.floor(Math.random() * 9) + 1;
+        correctAnswer = num1 / num2 + num3 / num4;
+        correctAnswer = Math.round(correctAnswer * 100) / 100;
+        questionText = `${num1}/${num2} + ${num3}/${num4} = ? (decimal)`;
+      }
+      break;
+  }
+  return questionText;
+}
+
+function nextQuestion() {
+  questionCount++;
+  if (questionCount > 10) {
+    document.getElementById("question").textContent = `🎉 Game Over! You scored ${score}/10!`;
+    playSound("winSound");
+    document.getElementById("options").innerHTML = "";
+    document.getElementById("nameInputArea").style.display = "block";
+    return;
+  }
+
+  document.getElementById("result").textContent = "";
+  document.getElementById("progress").style.width = `${(questionCount - 1) * 10}%`;
+
+  const questionText = generateQuestion();
+  document.getElementById("question").textContent = questionText;
+
+  // Generate 4 multiple-choice answers
+  let options = [correctAnswer];
+  while (options.length < 4) {
+    let fake = correctAnswer + (Math.random() * 10 - 5);
+    fake = Math.round(fake * 100) / 100;
+    if (!options.includes(fake)) options.push(fake);
+  }
+  options = options.sort(() => Math.random() - 0.5);
+
+  document.getElementById("options").innerHTML = "";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.classList.add("option");
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(opt);
+    document.getElementById("options").appendChild(btn);
+  });
+}
+
+function checkAnswer(selected) {
+  if (Math.abs(selected - correctAnswer) < 0.01) {
+    score++;
+    document.getElementById("result").textContent = "✅ Correct!";
+    playSound("correctSound");
+  } else {
+    document.getElementById("result").textContent = `❌ Wrong! Correct: ${correctAnswer}`;
+    playSound("wrongSound");
+  }
+  document.getElementById("scoreDisplay").textContent = `Score: ${score}`;
+  setTimeout(nextQuestion, 1000);
+}
+
+// ===== Leaderboard Logic =====
+function saveScore() {
+  const name = document.getElementById("playerName").value.trim();
+  if (!name) return alert("Please enter your name!");
+
+  let leaderboard = JSON.parse(localStorage.getItem("mathQuestLeaderboard")) || [];
+  leaderboard.push({ name, score });
+  leaderboard.sort((a, b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0, 5);
+  localStorage.setItem("mathQuestLeaderboard", JSON.stringify(leaderboard));
+
+  document.getElementById("playerName").value = "";
+  document.getElementById("nameInputArea").style.display = "none";
+  loadLeaderboard();
+}
+
+function loadLeaderboard() {
+  const list = document.getElementById("leaderboardList");
+  const leaderboard = JSON.parse(localStorage.getItem("mathQuestLeaderboard")) || [];
+  list.innerHTML = leaderboard.length
+    ? leaderboard.map((e, i) => `<li>${e.name} — ${e.score}/10</li>`).join("")
+    : "<li>No scores yet!</li>";
+}
+
+// Load leaderboard on startup
+loadLeaderboard();
+</script>
+</body>
+</html>
