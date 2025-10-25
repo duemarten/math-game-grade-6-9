@@ -7,8 +7,8 @@ It helps students practice arithmetic, algebra, exponents, and fractions through
 
 ## 🎮 Play the Game
 
-👉 **Play Online:** [https://YOUR-USERNAME.github.io/math-quest-game/](https://YOUR-USERNAME.github.io/math-quest-game/)  
-*(Replace `YOUR-USERNAME` with your GitHub username once published)*
+👉 **Play Online:** [https://duemartin.github.io/math-quest-game/](https://duemartin.github.io/math-quest-game/)  
+
 
 ---
 
